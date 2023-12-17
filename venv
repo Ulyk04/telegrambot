@@ -1,0 +1,48 @@
+Code for the bot in telegram
+import telebot
+import requests
+import bs4
+
+token='Your token'
+id_of_mychannel="Your id"
+bot=telebot.TeleBot(token)
+
+@bot.message_handler(commands=["start"])
+def main(message):
+    bot.send_message(message.chat.id, text='You are gay and Akylzhan')
+
+@bot.message_handler(func=lambda message:True)
+def more_message(message):
+    url_to_parse='site for the parse'
+    article_data=parser_for_site(url_to_parse)
+
+    if article_data:
+        title , article_text = article_data
+        message_to_send=f"Title is {title[:200]} \n\n and articles is\n {article_text[:200]}"
+        bot.send_message(chat_id=id_of_mychannel , text=message_to_send)
+    else:
+        bot.send_message(chat_id=id_of_mychannel , text="Fuck you...")
+
+def parser_for_site(url):
+    response=requests.get(url)
+
+    if response.status_code==200:
+        soup=bs4.BeautifulSoup(response.text , 'html.parser')
+
+        title_element=soup.find('h1', class_='tm-article-snippet__title')
+        title=title_element.text.strip() if title_element else "Title not found fucking bitch"
+
+        article_text=""
+        article_block=soup.find_all('div', class_='tm-article-body')
+        for block in article_block:
+            article_text += block.text.strip() + '\n'
+
+        return title , article_text
+    else:
+        print(f"This site is dangerous are you know bitch :({response.status_code}")
+        return None
+
+
+if __name__=="__main__":
+    bot.polling()
+
